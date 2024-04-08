@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lizhuhao.fundingmanagement.mapper.UserMapper">
+    <update id="update">
+        update tbl_user
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="account != null">
+                account=#{account},
+            </if>
+            <if test="password != null">
+                password=#{password},
+            </if>
+            <if test="permissions != null">
+                permissions=#{permissions}
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+<!--    <update id="delete">-->
+<!--        update tbl_user set del_flag = 1 where id = #{id}-->
+<!--    </update>-->
+
+<!--    <select id="selectPage">-->
+<!--        select * from tbl_user where name like concat('%',#{name},'%') limit #{pageNum},#{pageSize}-->
+<!--    </select>-->
+
+<!--    <select id="selectTotal">-->
+<!--        select count(*) from tbl_user where name like concat('%',#{name},'%')-->
+<!--    </select>-->
+</mapper>
