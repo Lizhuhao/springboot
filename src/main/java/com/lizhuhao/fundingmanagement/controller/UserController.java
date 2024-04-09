@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lizhuhao.fundingmanagement.common.Constants;
 import com.lizhuhao.fundingmanagement.common.Result;
 import com.lizhuhao.fundingmanagement.controller.dto.UserDTO;
+import com.lizhuhao.fundingmanagement.utils.TokenUtils;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +89,11 @@ public class UserController {
             queryWrapper.like("name",name);
         }
         queryWrapper.orderByDesc("id");
+
+        //获取当前用户信息
+        User currentUser = TokenUtils.getCurrentUser();
+        System.out.println("******************"+currentUser.getName());
+
         return Result.success(userService.page(new Page<>(pageNum, pageSize),queryWrapper));
     }
 

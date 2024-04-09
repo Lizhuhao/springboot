@@ -10,6 +10,7 @@ import com.lizhuhao.fundingmanagement.exception.ServiceException;
 import com.lizhuhao.fundingmanagement.mapper.UserMapper;
 import com.lizhuhao.fundingmanagement.service.IUserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lizhuhao.fundingmanagement.utils.TokenUtils;
 import org.springframework.stereotype.Service;
 
 /**
@@ -38,6 +39,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         if(user != null){
             BeanUtil.copyProperties(user,userDTO,true);
+            //设置token
+            String token = TokenUtils.genToken(user.getId(), user.getPassword());
+            userDTO.setToken(token);
             return userDTO;
         }else{
             throw new ServiceException(Constants.CODE_600, "用户名或密码错误");
