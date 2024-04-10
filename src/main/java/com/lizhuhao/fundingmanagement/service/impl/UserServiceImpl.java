@@ -40,11 +40,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if(user != null){
             BeanUtil.copyProperties(user,userDTO,true);
             //设置token
-            String token = TokenUtils.genToken(user.getId(), user.getPassword());
+            String token = TokenUtils.genToken(user.getId().toString(), user.getPassword());
             userDTO.setToken(token);
             return userDTO;
         }else{
             throw new ServiceException(Constants.CODE_600, "用户名或密码错误");
         }
+    }
+
+    @Override
+    public Boolean delete(Integer id) {
+        User user = getById(id);
+        user.setDelFlag(true);
+        boolean b = updateById(user);
+        return b;
     }
 }

@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * <p>
@@ -15,13 +14,12 @@ import lombok.ToString;
  * </p>
  *
  * @author lizhuhao
- * @since 2024-03-28
+ * @since 2024-04-09
  */
 @Getter
 @Setter
-@TableName("tbl_user")
-@ToString
-public class User implements Serializable {
+  @TableName("tbl_file")
+public class UploadFile implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -32,24 +30,24 @@ public class User implements Serializable {
         private Integer id;
 
       /**
-     * 姓名
+     * 文件名称
      */
-      private String name;
+      private String fileName;
 
       /**
-     * 账号（手机号）
+     * 文件类型
      */
-      private String account;
+      private String fileType;
 
       /**
-     * 密码
+     * 文件大小
      */
-      private String password;
+      private Long fileSize;
 
       /**
-     * 权限
+     * 下载链接
      */
-      private String permissions;
+      private String fileUrl;
 
       /**
      * 删除标志
@@ -57,14 +55,11 @@ public class User implements Serializable {
       private Boolean delFlag;
 
       /**
-     * 创建日期
+     * 创建时间
      */
       private LocalDateTime createTime;
-
-      /**
-     * 修改日期
+    /**
+     * 文件md5
      */
-      private LocalDateTime modifyTime;
-
-
+      private String md5;
 }

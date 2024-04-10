@@ -97,6 +97,17 @@ public class UserController {
         return Result.success(userService.page(new Page<>(pageNum, pageSize),queryWrapper));
     }
 
+    //逻辑删除
+    @DeleteMapping("/{id}")
+    public Result delete(@PathVariable Integer id){
+        if(userService.delete(id)){
+            return Result.success();
+        }else{
+            return Result.error();
+        }
+    }
+
+
     /**
      * 导出数据
      */
