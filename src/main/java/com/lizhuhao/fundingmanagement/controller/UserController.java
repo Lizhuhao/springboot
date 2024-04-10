@@ -10,22 +10,20 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lizhuhao.fundingmanagement.common.Constants;
 import com.lizhuhao.fundingmanagement.common.Result;
 import com.lizhuhao.fundingmanagement.controller.dto.UserDTO;
+import com.lizhuhao.fundingmanagement.entity.User;
+import com.lizhuhao.fundingmanagement.service.IUserService;
 import com.lizhuhao.fundingmanagement.utils.TokenUtils;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.util.Date;
 import java.util.List;
-
-import com.lizhuhao.fundingmanagement.service.IUserService;
-import com.lizhuhao.fundingmanagement.entity.User;
-
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * <p>
@@ -57,6 +55,11 @@ public class UserController {
     //新增或更新
     @PostMapping
     public Result save(@RequestBody User user){
+        System.out.println(user);
+        if(user.getId() != null){
+            Date currentTime = new Date();
+            user.setModifyTime(currentTime);
+        }
         return Result.success(userService.saveOrUpdate(user));
     }
 
@@ -83,12 +86,17 @@ public class UserController {
     @GetMapping("/page")
     public Result findPage(@RequestParam Integer pageNum,
                                @RequestParam Integer pageSize,
-                               @RequestParam(defaultValue = "") String name) {
+                               @RequestParam(defaultValue = "") String name,
+                                @RequestParam(defaultValue = "") String permissions) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.ne("del_flag",true);
         if(!name.equals("")){
             queryWrapper.like("name",name);
         }
-        queryWrapper.orderByDesc("id");
+        if(!permissions.equals("")){
+            queryWrapper.like("permissions",permissions);
+        }
+        queryWrapper.orderByDesc("id"); //根据id排序
 
         //获取当前用户信息
         User currentUser = TokenUtils.getCurrentUser();
@@ -154,11 +162,14 @@ public class UserController {
             User user = new User();
             user.setName(row.get(0).toString());
             user.setAccount(row.get(1).toString());
-            user.setPassword(row.get(2).toString());
+            if(StrUtil.isBlank(row.get(2).toString())){
+                user.setPassword("123");
+            }else{
+                user.setPassword(row.get(2).toString());
+            }
             user.setPermissions(row.get(3).toString());
             users.add(user);
         }
-        System.out.print(users);
         boolean isSave = userService.saveBatch(users);
         return Result.success(isSave);
     }

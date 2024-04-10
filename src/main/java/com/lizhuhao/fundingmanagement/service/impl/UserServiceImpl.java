@@ -30,6 +30,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("account", userDTO.getAccount());
         queryWrapper.eq("password", userDTO.getPassword());
+        queryWrapper.ne("del_flag",true);
         User user;
         try{
             user = getOne(queryWrapper);   //查询出符合账号密码的用户信息
@@ -38,6 +39,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new ServiceException(Constants.CODE_500, "系统错误");
         }
         if(user != null){
+            //使用工具类复制属性
             BeanUtil.copyProperties(user,userDTO,true);
             //设置token
             String token = TokenUtils.genToken(user.getId().toString(), user.getPassword());

@@ -3,10 +3,11 @@ package com.lizhuhao.fundingmanagement.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.io.Serializable;
-import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * <p>
@@ -57,7 +58,7 @@ public class UploadFile implements Serializable {
       /**
      * 创建时间
      */
-      private LocalDateTime createTime;
+      private Date createTime;
     /**
      * 文件md5
      */
