@@ -55,7 +55,6 @@ public class UserController {
     //新增或更新
     @PostMapping
     public Result save(@RequestBody User user){
-        System.out.println(user);
         if(user.getId() != null){
             Date currentTime = new Date();
             user.setModifyTime(currentTime);
