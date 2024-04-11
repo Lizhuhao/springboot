@@ -4,6 +4,8 @@ import com.lizhuhao.fundingmanagement.controller.dto.UserDTO;
 import com.lizhuhao.fundingmanagement.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * <p>
  *  服务类
@@ -17,4 +19,6 @@ public interface IUserService extends IService<User> {
     UserDTO login(UserDTO userDTO);
 
     Boolean delete(Integer id);
+
+    List<User> findAll();
 }

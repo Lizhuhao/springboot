@@ -11,7 +11,11 @@ import com.lizhuhao.fundingmanagement.mapper.UserMapper;
 import com.lizhuhao.fundingmanagement.service.IUserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lizhuhao.fundingmanagement.utils.TokenUtils;
+import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * <p>
@@ -56,5 +60,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setDelFlag(true);
         boolean b = updateById(user);
         return b;
+    }
+
+    @Resource
+    private UserMapper userMapper;
+
+    @Override
+    public List<User> findAll() {
+        List<User> list =  userMapper.findAll();
+        return list;
     }
 }

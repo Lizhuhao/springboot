@@ -115,23 +115,47 @@ public class UserController {
         }
     }
 
+    //修改密码
+    @PutMapping("/changePassword")
+    public Result changePassword(@RequestBody User user) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("account",user.getAccount());
+        User one = userService.getOne(queryWrapper);
+        one.setPassword(user.getPassword());
+        if(userService.updateById(one)){
+            return Result.success();
+        }else{
+            return Result.error();
+        }
+    }
 
     /**
-     * 导出数据
+     * 导出用户数据
      */
     @GetMapping("/export")
     public void export(HttpServletResponse response) throws Exception {
         //查询所有数据
-        List<User> list = userService.list();
+        List<User> list = userService.findAll();
+        for (User user : list) {
+            if(user.getPermissions().equals("0")){
+                user.setPermissions("管理员");
+            }else if(user.getPermissions().equals("1")){
+                user.setPermissions("团队负责人");
+            }
+        }
         //在内存操作，写出到浏览器
         ExcelWriter writer = ExcelUtil.getWriter(true);
         //定义标题别名
+        writer.addHeaderAlias("id","ID");
         writer.addHeaderAlias("name","姓名");
         writer.addHeaderAlias("account","账号");
         writer.addHeaderAlias("password","密码");
         writer.addHeaderAlias("permissions","权限");
         writer.addHeaderAlias("createTime","创建时间");
         writer.addHeaderAlias("modifyTime","修改时间");
+
+        //只输出设置了Alias(别名的字段)
+        writer.setOnlyAlias(true);
 
         //写入excel，默认样式，强制输出标题
         writer.write(list,true);
@@ -158,16 +182,23 @@ public class UserController {
         //忽略表头中文
         List<List<Object>> list = reader.read(1);
         List<User> users= CollUtil.newArrayList();
-        for (List<Object> row : list) {
-            User user = new User();
-            user.setName(row.get(0).toString());
-            user.setAccount(row.get(1).toString());
-            if(StrUtil.isBlank(row.get(2).toString())){
-                user.setPassword("123");
-            }else{
-                user.setPassword(row.get(2).toString());
+        for (int i = 0; i < list.size(); i++) {
+            for (int j = 0; j < list.size(); j++) {
+                if((i != j) && (list.get(i).get(1).toString().equals(list.get(j).get(1).toString()))){//导入文件存在重复账号
+                    return Result.error("600","导入文件存在重复账号");
+                }
             }
-            user.setPermissions(row.get(3).toString());
+            User user = new User();
+            user.setName(list.get(i).get(0).toString());
+            user.setAccount(list.get(i).get(1).toString());
+            user.setPermissions(list.get(i).get(2).toString());
+            user.setPassword("123");    //默认密码
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("account",user.getAccount());
+            User one = userService.getOne(queryWrapper);
+            if(one != null){
+                return Result.error("600","数据库中已存在导入账号");
+            }
             users.add(user);
         }
         boolean isSave = userService.saveBatch(users);
