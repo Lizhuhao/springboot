@@ -62,10 +62,10 @@ public class UserController {
         return Result.success(userService.saveOrUpdate(user));
     }
 
-    //查询所有数据
+    //查询所有未逻辑删除的数据
     @GetMapping
     public Result findAll() {
-        return Result.success(userService.list());
+        return Result.success(userService.findAll());
     }
 
     @GetMapping("/{id}")

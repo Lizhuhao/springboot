@@ -21,7 +21,7 @@ public class CodeGenerator {
                 .globalConfig(builder -> {
                     builder.author("lizhuhao") // 设置作者
                             //.enableSwagger() // 开启 swagger 模式
-                            .fileOverride() // 覆盖已生成文件
+//                            .fileOverride() // 覆盖已生成文件
                             .outputDir("E:\\graduation-project\\springboot\\springboot\\src\\main\\java\\"); // 指定输出目录
                 })
                 .packageConfig(builder -> {
@@ -34,7 +34,7 @@ public class CodeGenerator {
 //                    builder.mapperBuilder().enableMapperAnnotation().build();
                     builder.controllerBuilder().enableHyphenStyle()  // 开启驼峰转连字符
                             .enableRestStyle();  // 开启生成@RestController 控制器
-                    builder.addInclude("tbl_test") // 设置需要生成的表名
+                    builder.addInclude("tbl_project_type") // 设置需要生成的表名
                             .addTablePrefix("t_", "tbl_"); // 设置过滤表前缀
                 })
                 //.templateEngine(new FreemarkerTemplateEngine()) // 使用Freemarker引擎模板，默认的是Velocity引擎模板

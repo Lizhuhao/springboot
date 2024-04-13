@@ -1,7 +1,6 @@
 package com.lizhuhao.fundingmanagement.service;
 
-import com.lizhuhao.fundingmanagement.common.Result;
-import com.lizhuhao.fundingmanagement.entity.FundingType;
+import com.lizhuhao.fundingmanagement.entity.ProjectType;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
@@ -12,13 +11,14 @@ import java.util.List;
  * </p>
  *
  * @author lizhuhao
- * @since 2024-04-11
+ * @since 2024-04-12
  */
-public interface IFundingTypeService extends IService<FundingType> {
+public interface IProjectTypeService extends IService<ProjectType> {
 
     boolean delete(Integer id);
 
     boolean delBatch(List<Integer> ids);
 
-    List<FundingType> findAll();
+    List<ProjectType> findAll();
+
 }

@@ -1,10 +1,10 @@
 package com.lizhuhao.fundingmanagement.service.impl;
 
 import com.lizhuhao.fundingmanagement.entity.FundingType;
-import com.lizhuhao.fundingmanagement.entity.User;
 import com.lizhuhao.fundingmanagement.mapper.FundingTypeMapper;
 import com.lizhuhao.fundingmanagement.service.IFundingTypeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -37,5 +37,13 @@ public class FundingTypeServiceImpl extends ServiceImpl<FundingTypeMapper, Fundi
             list.add(fundingType);
         }
         return updateBatchById(list);
+    }
+
+    @Resource
+    private FundingTypeMapper fundingTypeMapper;
+
+    @Override
+    public List<FundingType> findAll() {
+        return fundingTypeMapper.findAll();
     }
 }
