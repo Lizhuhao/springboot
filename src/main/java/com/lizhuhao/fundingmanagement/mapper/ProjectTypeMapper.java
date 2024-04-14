@@ -18,5 +18,5 @@ import java.util.List;
 public interface ProjectTypeMapper extends BaseMapper<ProjectType> {
 
     @Select("select * from tbl_project_type where del_flag != true")
-    List<FundingType> findAll();
+    List<ProjectType> findAll();
 }

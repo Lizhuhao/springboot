@@ -12,6 +12,7 @@ import com.lizhuhao.fundingmanagement.common.Result;
 import com.lizhuhao.fundingmanagement.controller.dto.UserDTO;
 import com.lizhuhao.fundingmanagement.entity.User;
 import com.lizhuhao.fundingmanagement.service.IUserService;
+import com.lizhuhao.fundingmanagement.utils.TimeUtils;
 import com.lizhuhao.fundingmanagement.utils.TokenUtils;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
@@ -86,7 +87,9 @@ public class UserController {
     public Result findPage(@RequestParam Integer pageNum,
                                @RequestParam Integer pageSize,
                                @RequestParam(defaultValue = "") String name,
-                                @RequestParam(defaultValue = "") String permissions) {
+                               @RequestParam(defaultValue = "") String permissions,
+                               @RequestParam(defaultValue = "") String startDate,
+                               @RequestParam(defaultValue = "") String endDate) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.ne("del_flag",true);
         if(!name.equals("")){
@@ -95,11 +98,14 @@ public class UserController {
         if(!permissions.equals("")){
             queryWrapper.like("permissions",permissions);
         }
+        if(StrUtil.isNotBlank(startDate) && StrUtil.isNotBlank(endDate)){
+            queryWrapper.between("create_time", TimeUtils.timeProcess(startDate),TimeUtils.timeProcess(endDate));
+        }
         queryWrapper.orderByDesc("id"); //根据id排序
 
         //获取当前用户信息
-        User currentUser = TokenUtils.getCurrentUser();
-        System.out.println("******************"+currentUser.getName());
+//        User currentUser = TokenUtils.getCurrentUser();
+//        System.out.println("******************"+currentUser.getName());
 
         return Result.success(userService.page(new Page<>(pageNum, pageSize),queryWrapper));
     }

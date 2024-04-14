@@ -1,10 +1,10 @@
 package com.lizhuhao.fundingmanagement.service.impl;
 
-import com.lizhuhao.fundingmanagement.entity.FundingType;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lizhuhao.fundingmanagement.entity.ProjectType;
 import com.lizhuhao.fundingmanagement.mapper.ProjectTypeMapper;
 import com.lizhuhao.fundingmanagement.service.IProjectTypeService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -39,8 +39,11 @@ public class ProjectTypeServiceImpl extends ServiceImpl<ProjectTypeMapper, Proje
         return updateBatchById(list);
     }
 
+    @Resource
+    private ProjectTypeMapper projectTypeMapper;
+
     @Override
     public List<ProjectType> findAll() {
-        return null;
+        return projectTypeMapper.findAll();
     }
 }
