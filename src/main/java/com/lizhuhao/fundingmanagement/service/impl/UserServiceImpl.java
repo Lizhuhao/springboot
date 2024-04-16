@@ -70,4 +70,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         List<User> list =  userMapper.findAll();
         return list;
     }
+
+    @Override
+    public List<User> findPerson() {
+        return userMapper.findPerson();
+    }
 }

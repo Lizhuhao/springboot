@@ -18,4 +18,7 @@ public interface UserMapper extends BaseMapper<User> {
 
     @Select("select * from tbl_user where del_flag != true")
     List<User> findAll();
+
+    @Select("select * from tbl_user where permissions = 1 and del_flag != true")
+    List<User> findPerson();
 }

@@ -21,4 +21,6 @@ public interface IUserService extends IService<User> {
     Boolean delete(Integer id);
 
     List<User> findAll();
+
+    List<User> findPerson();
 }

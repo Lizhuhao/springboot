@@ -3,6 +3,7 @@ package com.lizhuhao.fundingmanagement.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -60,7 +61,21 @@ public class UploadFile implements Serializable {
      */
       private Date createTime;
     /**
+     * 创建时间
+     */
+    private Date modifyTime;
+    /**
      * 文件md5
      */
       private String md5;
+    /**
+     * 所属项目id
+     */
+    @JsonProperty
+    private Integer projectId;
+    /**
+     * 上传用户id
+     */
+    @JsonProperty
+    private Integer userId;
 }

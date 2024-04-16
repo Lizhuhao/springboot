@@ -5,6 +5,9 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.lizhuhao.fundingmanagement.common.Result;
+import com.lizhuhao.fundingmanagement.controller.dto.FileDTO;
 import com.lizhuhao.fundingmanagement.entity.UploadFile;
 import com.lizhuhao.fundingmanagement.service.IFileService;
 import jakarta.servlet.ServletOutputStream;
@@ -32,6 +35,26 @@ public class FileController {
     @Autowired
     private IFileService fileService;
 
+    //分页查询
+    @GetMapping("/page")
+    public Result findPage(@RequestParam Integer pageNum,
+                           @RequestParam Integer pageSize,
+                           @RequestParam(defaultValue = "") String fileName,
+                           @RequestParam(defaultValue = "") String projectName,
+                           @RequestParam(defaultValue = "") String userName,
+                           @RequestParam(defaultValue = "") String startDate,
+                           @RequestParam(defaultValue = "") String endDate) {
+
+        List<FileDTO> list = fileService.findPage(pageNum, pageSize, startDate, endDate, fileName, projectName, userName);
+        Page<FileDTO> fileDTOPage = new Page<>();
+        fileDTOPage.setRecords(list);
+        fileDTOPage.setCurrent(pageNum);
+        fileDTOPage.setSize(pageSize);
+        Integer total = fileService.selectCount(startDate, endDate, fileName, projectName, userName);
+        fileDTOPage.setTotal(total);
+        return Result.success(fileDTOPage);
+    }
+
     /**
      * 文件上传接口
      * @param file
@@ -39,7 +62,20 @@ public class FileController {
      * @throws IOException
      */
     @PostMapping("/upload")
-    public String upload(@RequestParam MultipartFile file) throws IOException {
+    public Result upload(@RequestParam MultipartFile file,
+                         @RequestParam Integer projectId,
+                         @RequestParam Integer userId) throws IOException {
+        QueryWrapper<UploadFile> queryWrapperOne = new QueryWrapper<>();
+        queryWrapperOne.ne("del_flag",true);
+        queryWrapperOne.eq("project_id",projectId);
+        queryWrapperOne.eq("user_id",userId);
+        UploadFile one = fileService.getOne(queryWrapperOne);
+        if(one != null){//重新提交时，先将磁盘中已存在的文件删除，数据库记录也删除
+            File fileDel = new File(fileUploadPath + one.getFileUrl());
+            fileDel.delete();
+            one.setDelFlag(true);
+            fileService.saveOrUpdate(one);
+        }
         String originalFilename = file.getOriginalFilename(); //获取文件名称
         String type = FileUtil.extName(originalFilename);   //获取文件类型
         long size = file.getSize();
@@ -57,6 +93,7 @@ public class FileController {
         //获取文件的md5，并在数据库中查询是否也存在相同的md5
         String md5 = SecureUtil.md5(uploadFile);
         QueryWrapper<UploadFile> queryWrapper = new QueryWrapper<>();
+        queryWrapper.ne("del_flag",true);
         queryWrapper.eq("md5",md5);
         List<UploadFile> fileList = fileService.list(queryWrapper);
         String url;
@@ -66,7 +103,8 @@ public class FileController {
             //删除多余文件
             uploadFile.delete();
         }else{
-            url = "http://localhost:9090/file/" + fileUUID;
+//            url = "http://localhost:9090/file/" + fileUUID;
+            url = fileUUID;
         }
         //记录到数据库
         UploadFile saveFile = new UploadFile();
@@ -75,8 +113,14 @@ public class FileController {
         saveFile.setFileSize(size);
         saveFile.setFileUrl(url);
         saveFile.setMd5(md5);
-        fileService.save(saveFile);
-        return url;
+        saveFile.setProjectId(projectId);
+        saveFile.setUserId(userId);
+        if(fileService.save(saveFile)){
+            return Result.success();
+        }else{
+            return Result.error();
+        }
+
     }
 
     /**

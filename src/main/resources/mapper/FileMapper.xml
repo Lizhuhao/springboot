@@ -2,4 +2,51 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.lizhuhao.fundingmanagement.mapper.FileMapper">
 
+
+    <select id="findPage" resultType="com.lizhuhao.fundingmanagement.controller.dto.FileDTO">
+        select f.id as id, f.file_name as fileName, p.project_name as projectName, u.name as userName,f.create_time as createTime,
+               f.modify_time as modifyTime, f.project_id as projectId, f.user_id as userId, f.file_url as fileUrl
+        from tbl_file f
+        JOIN tbl_project p ON f.project_id = p.id
+        JOIN tbl_user u ON f.user_id = u.id
+        <where>
+            f.del_flag != true
+            <if test="userName != null and userName != ''">
+                and u.name like concat('%', #{userName}, '%')
+            </if>
+            <if test="fileName != null and fileName != ''">
+                and f.file_name like concat('%', #{fileName}, '%')
+            </if>
+            <if test="projectName != null and projectName != ''">
+                and p.project_name like concat('%', #{projectName}, '%')
+            </if>
+            <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+                and f.create_time between #{startDate} and #{endDate}
+            </if>
+        </where>
+        limit #{pageSize} offset #{pageNum}
+    </select>
+
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(*)
+        from tbl_file f
+        JOIN tbl_project p ON f.project_id = p.id
+        JOIN tbl_user u ON f.user_id = u.id
+        <where>
+            f.del_flag != true
+            <if test="userName != null and userName != ''">
+                and u.name like concat('%', #{userName}, '%')
+            </if>
+            <if test="fileName != null and fileName != ''">
+                and f.file_name like concat('%', #{fileName}, '%')
+            </if>
+            <if test="projectName != null and projectName != ''">
+                and p.project_name like concat('%', #{projectName}, '%')
+            </if>
+            <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+                and f.create_time between #{startDate} and #{endDate}
+            </if>
+        </where>
+    </select>
 </mapper>
