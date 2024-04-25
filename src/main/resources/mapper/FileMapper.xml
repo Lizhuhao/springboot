@@ -23,6 +23,9 @@
             <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
                 and f.create_time between #{startDate} and #{endDate}
             </if>
+            <if test="userId != null">
+                and f.user_id = #{userId}
+            </if>
         </where>
         limit #{pageSize} offset #{pageNum}
     </select>
@@ -46,6 +49,9 @@
             </if>
             <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
                 and f.create_time between #{startDate} and #{endDate}
+            </if>
+            <if test="userId != null">
+                and f.user_id = #{userId}
             </if>
         </where>
     </select>

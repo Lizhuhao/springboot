@@ -16,7 +16,9 @@ import java.util.List;
  */
 public interface FileMapper extends BaseMapper<UploadFile> {
 
-    List<FileDTO> findPage(Integer pageNum, Integer pageSize, String startDate, String endDate, String fileName, String projectName, String userName);
+    List<FileDTO> findPage(Integer pageNum, Integer pageSize, String startDate, String endDate,
+                           String fileName, String projectName, String userName,Integer userId);
 
-    Integer selectCount(String startDate, String endDate, String fileName, String projectName, String userName);
+    Integer selectCount(String startDate, String endDate, String fileName,
+                        String projectName, String userName,Integer userId);
 }

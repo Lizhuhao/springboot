@@ -21,3 +21,6 @@ mybatis-plus:
 files:
   upload:
     path: E:/graduation-project/springboot/springboot/files/
+evidences:
+  upload:
+    path: E:/graduation-project/springboot/springboot/evidences/

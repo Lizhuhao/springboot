@@ -9,7 +9,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lizhuhao.fundingmanagement.common.Result;
 import com.lizhuhao.fundingmanagement.controller.dto.FileDTO;
 import com.lizhuhao.fundingmanagement.entity.UploadFile;
+import com.lizhuhao.fundingmanagement.entity.User;
 import com.lizhuhao.fundingmanagement.service.IFileService;
+import com.lizhuhao.fundingmanagement.service.IUserService;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,22 +37,29 @@ public class FileController {
     @Autowired
     private IFileService fileService;
 
+    @Autowired
+    private IUserService userService;
+
     //分页查询
     @GetMapping("/page")
     public Result findPage(@RequestParam Integer pageNum,
                            @RequestParam Integer pageSize,
+                           @RequestParam(defaultValue = "'0'") Integer userId,
                            @RequestParam(defaultValue = "") String fileName,
                            @RequestParam(defaultValue = "") String projectName,
                            @RequestParam(defaultValue = "") String userName,
                            @RequestParam(defaultValue = "") String startDate,
                            @RequestParam(defaultValue = "") String endDate) {
-
-        List<FileDTO> list = fileService.findPage(pageNum, pageSize, startDate, endDate, fileName, projectName, userName);
+        User user = userService.getById(userId);
+        if(user.getPermissions().equals("0")){//管理员不需要筛选userId条件
+            userId = null;
+        }
+        List<FileDTO> list = fileService.findPage(pageNum, pageSize, startDate, endDate, fileName, projectName, userName,userId);
         Page<FileDTO> fileDTOPage = new Page<>();
         fileDTOPage.setRecords(list);
         fileDTOPage.setCurrent(pageNum);
         fileDTOPage.setSize(pageSize);
-        Integer total = fileService.selectCount(startDate, endDate, fileName, projectName, userName);
+        Integer total = fileService.selectCount(startDate, endDate, fileName, projectName, userName,userId);
         fileDTOPage.setTotal(total);
         return Result.success(fileDTOPage);
     }
@@ -137,6 +146,8 @@ public class FileController {
         ServletOutputStream os = response.getOutputStream();
         response.setContentType("application/octet-stream");
         response.setHeader("Content-Disposition","attachment;filename="+ URLEncoder.encode(fileUUID, "UTF-8"));
+//        String newFileName = "newFileName.doc";
+//        response.setHeader("Content-Disposition","attachment;filename="+ URLEncoder.encode(newFileName, "UTF-8"));
         //读取文件字节流
         os.write(FileUtil.readBytes(uploadFile));
         os.flush();

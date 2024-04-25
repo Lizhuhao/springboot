@@ -69,12 +69,19 @@ public class UserController {
         return Result.success(userService.findAll());
     }
 
-    //查询所有未逻辑删除的数据
+    //查询所有科研负责人
     @GetMapping("/findPerson")
     public Result findPerson() {
         return Result.success(userService.findPerson());
     }
 
+    //重置账号
+    @PostMapping("/reset")
+    public Result resetAccount(@RequestParam Integer id){
+        User user = userService.getById(id);
+        user.setPassword("123");
+        return Result.success(userService.saveOrUpdate(user));
+    }
     @GetMapping("/{id}")
     public Result findOne(@PathVariable Integer id) {
         return Result.success(userService.getById(id));

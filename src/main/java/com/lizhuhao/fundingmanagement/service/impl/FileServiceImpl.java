@@ -28,15 +28,16 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, UploadFile> impleme
 
     @Override
     public List<FileDTO> findPage(Integer pageNum, Integer pageSize, String startDate, String endDate,
-                                  String fileName, String projectName, String userName) {
+                                  String fileName, String projectName, String userName,Integer userId) {
         pageNum = (pageNum -1) * pageSize;
         return fileMapper.findPage(pageNum,pageSize,TimeUtils.timeProcess(startDate),
-                TimeUtils.timeProcess(endDate),fileName, projectName,userName);
+                TimeUtils.timeProcess(endDate),fileName, projectName,userName,userId);
     }
 
     @Override
-    public Integer selectCount(String startDate, String endDate, String fileName, String projectName, String userName) {
-        return fileMapper.selectCount(startDate, endDate, fileName, projectName, userName);
+    public Integer selectCount(String startDate, String endDate, String fileName,
+                               String projectName, String userName,Integer userId) {
+        return fileMapper.selectCount(startDate, endDate, fileName, projectName, userName,userId);
     }
 
 
