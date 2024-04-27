@@ -1,8 +1,8 @@
 package com.lizhuhao.fundingmanagement.service;
 
-import com.lizhuhao.fundingmanagement.common.Result;
-import com.lizhuhao.fundingmanagement.entity.FundingType;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.lizhuhao.fundingmanagement.entity.FundingType;
 
 import java.util.List;
 
@@ -21,4 +21,6 @@ public interface IFundingTypeService extends IService<FundingType> {
     boolean delBatch(List<Integer> ids);
 
     List<FundingType> findAll();
+
+    Page<FundingType> findPage(Integer pageNum, Integer pageSize, String typeName, String startDate, String endDate);
 }

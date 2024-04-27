@@ -1,7 +1,13 @@
 package com.lizhuhao.fundingmanagement.service;
 
-import com.lizhuhao.fundingmanagement.entity.BudgetChange;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.lizhuhao.fundingmanagement.controller.dto.EvidenceDTO;
+import com.lizhuhao.fundingmanagement.entity.BudgetChange;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 /**
  * <p>
@@ -13,4 +19,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IBudgetChangeService extends IService<BudgetChange> {
 
+    boolean addAndUpdate(BudgetChange budgetChange);
+
+    Page<EvidenceDTO> findPage(Integer pageNum, Integer pageSize, Integer projectId);
+
+    EvidenceDTO upload(MultipartFile file) throws IOException;
+
+    void download(String fileUUID, HttpServletResponse response) throws IOException;
 }

@@ -1,8 +1,8 @@
 package com.lizhuhao.fundingmanagement.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.lizhuhao.fundingmanagement.controller.dto.FundingDTO;
 import com.lizhuhao.fundingmanagement.entity.Funding;
-import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
 
@@ -19,4 +19,8 @@ public interface IFundingService extends IService<Funding> {
     Long selectCount(Integer projectId);
 
     List<Funding> selectList(Integer projectId);
+
+    boolean distributeFunding(List<FundingDTO> list, Integer projectId);
+
+    List<FundingDTO> findFunding(Integer projectId);
 }

@@ -1,21 +1,14 @@
 package com.lizhuhao.fundingmanagement.controller;
 
-import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.lizhuhao.fundingmanagement.utils.TimeUtils;
+import com.lizhuhao.fundingmanagement.common.Constants;
+import com.lizhuhao.fundingmanagement.common.Result;
+import com.lizhuhao.fundingmanagement.entity.FundingType;
+import com.lizhuhao.fundingmanagement.service.IFundingTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
-import com.lizhuhao.fundingmanagement.common.Constants;
-import com.lizhuhao.fundingmanagement.common.Result;
-
-import com.lizhuhao.fundingmanagement.service.IFundingTypeService;
-import com.lizhuhao.fundingmanagement.entity.FundingType;
-
-import org.springframework.web.bind.annotation.RestController;
 
 /**
  * <p>
@@ -39,13 +32,22 @@ public class FundingTypeController {
             Date currentTime = new Date();
             fundingType.setModifyTime(currentTime);
         }
-        return Result.success(fundingTypeService.saveOrUpdate(fundingType));
+        if(fundingTypeService.saveOrUpdate(fundingType)){
+            return Result.success();
+        }else{
+            return Result.error(Constants.CODE_400,"保存失败");
+        }
     }
 
     //查询所有未逻辑删除的数据
     @GetMapping
     public Result findAll() {
-        return Result.success(fundingTypeService.findAll());
+        List<FundingType> list = fundingTypeService.findAll();
+        if(list.size() != 0){
+            return Result.success();
+        }else{
+            return Result.error(Constants.CODE_400,"查询失败");
+        }
     }
 
     @GetMapping("/{id}")
@@ -60,16 +62,7 @@ public class FundingTypeController {
                            @RequestParam(defaultValue = "") String typeName,
                            @RequestParam(defaultValue = "") String startDate,
                            @RequestParam(defaultValue = "") String endDate) {
-        QueryWrapper<FundingType> queryWrapper = new QueryWrapper<>();
-        queryWrapper.ne("del_flag",true);
-        if(StrUtil.isNotBlank(typeName)){
-            queryWrapper.like("type_name",typeName);
-        }
-        if(StrUtil.isNotBlank(startDate) && StrUtil.isNotBlank(endDate)){
-            queryWrapper.between("create_time",TimeUtils.timeProcess(startDate),TimeUtils.timeProcess(endDate));
-        }
-        queryWrapper.orderByDesc("id");
-        return Result.success(fundingTypeService.page(new Page<>(pageNum, pageSize),queryWrapper));
+        return Result.success(fundingTypeService.findPage(pageNum,pageSize,typeName,startDate,endDate));
     }
 
     //逻辑删除

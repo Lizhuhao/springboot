@@ -1,7 +1,8 @@
 package com.lizhuhao.fundingmanagement.service;
 
-import com.lizhuhao.fundingmanagement.entity.ProjectType;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.lizhuhao.fundingmanagement.entity.ProjectType;
 
 import java.util.List;
 
@@ -21,4 +22,5 @@ public interface IProjectTypeService extends IService<ProjectType> {
 
     List<ProjectType> findAll();
 
+    Page<ProjectType> findPage(Integer pageNum, Integer pageSize, String typeName, String startDate, String endDate);
 }

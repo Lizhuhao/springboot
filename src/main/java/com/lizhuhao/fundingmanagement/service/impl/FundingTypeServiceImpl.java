@@ -1,9 +1,13 @@
 package com.lizhuhao.fundingmanagement.service.impl;
 
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lizhuhao.fundingmanagement.entity.FundingType;
 import com.lizhuhao.fundingmanagement.mapper.FundingTypeMapper;
 import com.lizhuhao.fundingmanagement.service.IFundingTypeService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lizhuhao.fundingmanagement.utils.TimeUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -45,5 +49,19 @@ public class FundingTypeServiceImpl extends ServiceImpl<FundingTypeMapper, Fundi
     @Override
     public List<FundingType> findAll() {
         return fundingTypeMapper.findAll();
+    }
+
+    @Override
+    public Page<FundingType> findPage(Integer pageNum, Integer pageSize, String typeName, String startDate, String endDate) {
+        QueryWrapper<FundingType> queryWrapper = new QueryWrapper<>();
+        queryWrapper.ne("del_flag",true);
+        if(StrUtil.isNotBlank(typeName)){
+            queryWrapper.like("type_name",typeName);
+        }
+        if(StrUtil.isNotBlank(startDate) && StrUtil.isNotBlank(endDate)){
+            queryWrapper.between("create_time", TimeUtils.timeProcess(startDate),TimeUtils.timeProcess(endDate));
+        }
+        queryWrapper.orderByDesc("id");
+        return page(new Page<>(pageNum, pageSize),queryWrapper);
     }
 }
