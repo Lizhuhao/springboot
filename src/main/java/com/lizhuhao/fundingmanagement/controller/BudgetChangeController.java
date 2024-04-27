@@ -9,13 +9,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lizhuhao.fundingmanagement.common.Result;
 import com.lizhuhao.fundingmanagement.controller.dto.EvidenceDTO;
-import com.lizhuhao.fundingmanagement.controller.dto.ProjectDTO;
+import com.lizhuhao.fundingmanagement.entity.BudgetChange;
 import com.lizhuhao.fundingmanagement.entity.Project;
-import com.lizhuhao.fundingmanagement.entity.ProjectType;
-import com.lizhuhao.fundingmanagement.entity.UploadFile;
+import com.lizhuhao.fundingmanagement.service.IBudgetChangeService;
 import com.lizhuhao.fundingmanagement.service.IOcrService;
-import com.lizhuhao.fundingmanagement.utils.TimeUtils;
+import com.lizhuhao.fundingmanagement.service.IProjectService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,9 +23,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
@@ -35,14 +37,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import com.lizhuhao.fundingmanagement.common.Constants;
-import com.lizhuhao.fundingmanagement.common.Result;
-
-import com.lizhuhao.fundingmanagement.service.IBudgetChangeService;
-import com.lizhuhao.fundingmanagement.entity.BudgetChange;
-
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * <p>
@@ -62,14 +56,37 @@ public class BudgetChangeController {
     @Resource
     private IOcrService ocrService;
 
-    //新增或更新
+    @Autowired
+    private IProjectService projectService;
+
+    //新增或更新，
     @PostMapping
     public Result save(@RequestBody BudgetChange budgetChange){
+        BigDecimal balance = new BigDecimal(0);//余额
+        QueryWrapper<Project> queryProject= new QueryWrapper<>();
+        queryProject.eq("id", budgetChange.getProjectId());
+        queryProject.ne("del_flag", true);
+        Project project = projectService.getOne(queryProject);
         if(budgetChange.getId() != null){
             Date currentTime = new Date();
             budgetChange.setModifyTime(currentTime);
         }
-        return Result.success(budgetChangeService.saveOrUpdate(budgetChange));
+        if(budgetChangeService.saveOrUpdate(budgetChange)){
+            BigDecimal totalBudget = project.getTotalBudget();
+            QueryWrapper<BudgetChange> queryBudgetChange = new QueryWrapper<>();
+            queryBudgetChange.eq("project_id",budgetChange.getProjectId());
+            queryBudgetChange.ne("del_flag", true);
+            balance = balance.add(totalBudget);
+            List<BudgetChange> budgetChangeList = budgetChangeService.list(queryBudgetChange);
+            for (BudgetChange budget : budgetChangeList) {
+                balance = balance.subtract(budget.getCostAmount());
+            }
+            project.setBalance(balance);
+            projectService.saveOrUpdate(project);//执行预算或修改执行预算时，给项目重新计算余额
+            return Result.success();
+        }else {
+            return Result.error();
+        }
     }
 
     //查询所有数据
