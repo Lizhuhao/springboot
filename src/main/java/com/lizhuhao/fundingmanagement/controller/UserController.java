@@ -65,7 +65,7 @@ public class UserController {
     public Result findAll() {
         List<User> userList = userService.findAll();
         if(userList.size() != 0){
-            return Result.success();
+            return Result.success(userList);
         }else{
             return Result.error(Constants.CODE_400,"查询失败");
         }
@@ -76,7 +76,7 @@ public class UserController {
     public Result findPerson() {
         List<User> userList = userService.findPerson();
         if(userList.size() != 0){
-            return Result.success();
+            return Result.success(userList);
         }else{
             return Result.error(Constants.CODE_400,"查询失败");
         }

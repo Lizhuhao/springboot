@@ -44,7 +44,7 @@ public class FundingTypeController {
     public Result findAll() {
         List<FundingType> list = fundingTypeService.findAll();
         if(list.size() != 0){
-            return Result.success();
+            return Result.success(list);
         }else{
             return Result.error(Constants.CODE_400,"查询失败");
         }

@@ -20,8 +20,6 @@ public class FileController {
     @Autowired
     private IFileService fileService;
 
-    @Autowired
-    private IUserService userService;
 
     //分页查询
     @GetMapping("/page")
