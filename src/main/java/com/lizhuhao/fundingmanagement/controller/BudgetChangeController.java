@@ -33,11 +33,7 @@ public class BudgetChangeController {
     //新增或更新，
     @PostMapping
     public Result save(@RequestBody BudgetChange budgetChange){
-        if(budgetChangeService.addAndUpdate(budgetChange)){
-            return Result.success();
-        }else {
-            return Result.error();
-        }
+        return budgetChangeService.addAndUpdate(budgetChange);
     }
 
     //查询所有数据
@@ -55,10 +51,14 @@ public class BudgetChangeController {
         return Result.success(budgetChangeService.findPage(pageNum,pageSize,projectId));
     }
 
-
+    //查询明细
+    @GetMapping("/detail")
+    public Result findDetail(@RequestParam Integer projectId) {
+        return Result.success(budgetChangeService.findDetail(projectId));
+    }
 
     /**
-     * 文件上传接口
+     * 凭证文件上传接口
      * @param file
      * @return
      * @throws IOException
@@ -68,8 +68,14 @@ public class BudgetChangeController {
         return Result.success(budgetChangeService.upload(file));
     }
 
+    //预算执行取消时，删除凭证文件
+    @GetMapping("/deleteEvidences")
+    public void deleteEvidences(@RequestParam String fileUUID){
+        budgetChangeService.deleteEvidences(fileUUID);
+    }
+
     /**
-     * 文件下载接口   "http://localhost:9090/budgetChange/{fileUUID}"
+     * 凭证文件下载接口   "http://localhost:9090/budgetChange/{fileUUID}"
      * @param fileUUID
      * @param response
      * @throws IOException
