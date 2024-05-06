@@ -130,7 +130,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public void export(HttpServletResponse response) throws IOException {
         //查询所有数据
-        List<User> list = findAll();
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.ne("del_flag",true);
+        List<User> list = list(queryWrapper);
         for (User user : list) {
             if(user.getPermissions().equals("0")){
                 user.setPermissions("管理员");
