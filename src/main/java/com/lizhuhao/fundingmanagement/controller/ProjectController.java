@@ -49,6 +49,7 @@ public class ProjectController {
     @GetMapping("/page")
     public Result findPage(@RequestParam Integer pageNum,
                            @RequestParam Integer pageSize,
+                           @RequestParam(defaultValue = "'0'") Integer userId,
                            @RequestParam(defaultValue = "0") Integer pId,
                            @RequestParam(defaultValue = "") String projectName,
                            @RequestParam(defaultValue = "") String responsiblePerson,
@@ -57,7 +58,7 @@ public class ProjectController {
                            @RequestParam(defaultValue = "") String startTime,
                            @RequestParam(defaultValue = "") String endTime) {
         return Result.success(projectService.findPage(pageNum,pageSize,pId,projectName,
-                responsiblePerson, startDate,endDate,startTime,endTime));
+                responsiblePerson, startDate,endDate,startTime,endTime,userId));
     }
 
     //逻辑删除

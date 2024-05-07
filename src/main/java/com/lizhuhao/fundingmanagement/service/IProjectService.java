@@ -25,5 +25,6 @@ public interface IProjectService extends IService<Project> {
 
     boolean addAndUpdate(Project project);
 
-    Page<ProjectDTO> findPage(Integer pageNum, Integer pageSize, Integer pId, String projectName, String responsiblePerson, String startDate, String endDate, String startTime, String endTime);
+    Page<ProjectDTO> findPage(Integer pageNum, Integer pageSize, Integer pId, String projectName, String responsiblePerson,
+                              String startDate, String endDate, String startTime, String endTime, Integer userId);
 }

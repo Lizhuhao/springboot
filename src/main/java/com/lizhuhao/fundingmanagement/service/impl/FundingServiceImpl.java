@@ -1,5 +1,6 @@
 package com.lizhuhao.fundingmanagement.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lizhuhao.fundingmanagement.controller.dto.FundingDTO;
@@ -80,7 +81,11 @@ public class FundingServiceImpl extends ServiceImpl<FundingMapper, Funding> impl
             for (FundingDTO fundingDTO : list) {
                 Funding funding = new Funding();
                 funding.setFundingTypeId(fundingDTO.getKey());
-                funding.setAmount(new BigDecimal(fundingDTO.getValue()));
+                if(StrUtil.isNotBlank(fundingDTO.getValue())){
+                    funding.setAmount(new BigDecimal(fundingDTO.getValue()));
+                }else{
+                    funding.setAmount(new BigDecimal("0.00"));
+                }
                 funding.setProjectId(projectId);
                 totalBudget = totalBudget.add(funding.getAmount());
                 fundings.add(funding);

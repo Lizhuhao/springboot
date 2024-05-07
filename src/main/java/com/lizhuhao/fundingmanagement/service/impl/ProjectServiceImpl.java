@@ -83,9 +83,14 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
     }
 
     @Override
-    public Page<ProjectDTO> findPage(Integer pageNum, Integer pageSize, Integer pId, String projectName, String responsiblePerson, String startDate, String endDate, String startTime, String endTime) {
+    public Page<ProjectDTO> findPage(Integer pageNum, Integer pageSize, Integer pId, String projectName, String responsiblePerson,
+                                     String startDate, String endDate, String startTime, String endTime,Integer userId) {
+        User user = userService.getById(userId);
         QueryWrapper<Project> queryWrapper = new QueryWrapper<>();
         queryWrapper.ne("del_flag",true);
+        if(StrUtil.equals(user.getPermissions(),"1")){//如果是科研负责人，只能看见自己的项目信息
+            queryWrapper.eq("u_id",userId);
+        }
         if(!pId.equals(0)){
             queryWrapper.eq("p_id",pId);
         }

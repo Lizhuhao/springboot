@@ -137,7 +137,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             if(user.getPermissions().equals("0")){
                 user.setPermissions("管理员");
             }else if(user.getPermissions().equals("1")){
-                user.setPermissions("团队负责人");
+                user.setPermissions("科研负责人");
             }
         }
         //在内存操作，写出到浏览器
