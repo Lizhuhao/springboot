@@ -4,6 +4,9 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
+import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.ExcelWriter;
+import cn.hutool.poi.excel.StyleSet;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -12,17 +15,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lizhuhao.fundingmanagement.common.Constants;
 import com.lizhuhao.fundingmanagement.common.Result;
 import com.lizhuhao.fundingmanagement.controller.dto.EvidenceDTO;
-import com.lizhuhao.fundingmanagement.entity.BudgetChange;
-import com.lizhuhao.fundingmanagement.entity.Funding;
-import com.lizhuhao.fundingmanagement.entity.Project;
+import com.lizhuhao.fundingmanagement.entity.*;
 import com.lizhuhao.fundingmanagement.mapper.BudgetChangeMapper;
-import com.lizhuhao.fundingmanagement.service.IBudgetChangeService;
-import com.lizhuhao.fundingmanagement.service.IFundingService;
-import com.lizhuhao.fundingmanagement.service.IOcrService;
-import com.lizhuhao.fundingmanagement.service.IProjectService;
+import com.lizhuhao.fundingmanagement.service.*;
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,7 +54,10 @@ public class BudgetChangeServiceImpl extends ServiceImpl<BudgetChangeMapper, Bud
 
     @Autowired
     private IProjectService projectService;
-
+    @Autowired
+    private IUserService userService;
+    @Autowired
+    private IProjectTypeService projectTypeService;
     @Autowired
     private IFundingService fundingService;
 
@@ -261,4 +263,124 @@ public class BudgetChangeServiceImpl extends ServiceImpl<BudgetChangeMapper, Bud
         }
         return list;
     }
+
+    @Override
+    public void exportDetail(List<EvidenceDTO> list, HttpServletResponse response) throws IOException {
+        Integer userId = null;
+        Integer projectId = null;
+        if(list.size() > 0){
+            userId = list.get(0).getUserId();
+            projectId = list.get(0).getProjectId();
+        }
+        User user = userService.getById(userId);
+        Project project = projectService.getById(projectId);
+        ProjectType projectType = projectTypeService.getById(project.getPId());
+
+        //在内存操作，写出到浏览器
+        ExcelWriter writer = ExcelUtil.getWriter(true);
+
+        //给日期单元格设置格式
+        DataFormat dataFormat = writer.getWorkbook().createDataFormat();
+        short format = dataFormat.getFormat("yyyy-mm-dd");
+        StyleSet styleSet = writer.getStyleSet();
+        styleSet.getCellStyleForDate().setDataFormat(format);
+
+        // 设置标题一样式
+        CellStyle cellStyle1 = writer.createCellStyle();
+        cellStyle1.setVerticalAlignment(VerticalAlignment.CENTER);//垂直居中
+        cellStyle1.setAlignment(HorizontalAlignment.CENTER);//水平居中
+        //边框设置
+        cellStyle1.setBorderLeft(writer.getCellStyle().getBorderLeft());
+        cellStyle1.setBorderRight(writer.getCellStyle().getBorderRight());
+        cellStyle1.setBorderBottom(writer.getCellStyle().getBorderBottom());
+        cellStyle1.setWrapText(true);//自动换行
+        Font font = writer.createFont();    //设置字体
+        font.setBold(true);
+        font.setFontHeightInPoints((short) 12);
+        font.setFontName("微软雅黑");
+        cellStyle1.setFont(font);
+
+        CellStyle cellStyle2 = writer.createCellStyle();
+        //边框设置
+        cellStyle2.setBorderLeft(writer.getCellStyle().getBorderLeft());
+        cellStyle2.setBorderRight(writer.getCellStyle().getBorderRight());
+        cellStyle2.setBorderBottom(writer.getCellStyle().getBorderBottom());
+        cellStyle2.setWrapText(true);//自动换行
+        Font font2 = writer.createFont();    //设置字体
+        font2.setFontHeightInPoints((short) 9);
+        font2.setFontName("宋体");
+        cellStyle2.setFont(font2);
+
+        CellStyle cellStyle3 = writer.createCellStyle();
+        cellStyle3.setVerticalAlignment(VerticalAlignment.CENTER);//垂直居中
+        cellStyle3.setAlignment(HorizontalAlignment.CENTER);//水平居中
+        cellStyle3.setBorderLeft(writer.getCellStyle().getBorderLeft());
+        cellStyle3.setBorderRight(writer.getCellStyle().getBorderRight());
+        cellStyle3.setBorderBottom(writer.getCellStyle().getBorderBottom());
+        cellStyle3.setWrapText(true);//自动换行
+        cellStyle3.setFont(font2);
+
+        CellStyle cellStyle4 = writer.createCellStyle();
+        cellStyle4.setWrapText(true);//自动换行
+        cellStyle4.setFont(font2);
+
+        //首行、信息行
+        writer.merge(0,0,0,4, "项目预算明细表", cellStyle1);
+        writer.setRowHeight(0, 40);
+        String projectAndUser = project.getProjectNumber() + "/" +user.getName() + " " +project.getProjectName();
+        String message = projectType.getTypeNumber() + "/" + projectType.getTypeName() + "\r\n" + projectAndUser;
+        writer.merge(1,1,0,4, message, cellStyle2);
+        writer.setRowHeight(1, 26);
+        writer.passRows(2);//跳过标题行、信息行
+
+        //定义标题别名
+        writer.addHeaderAlias("evidenceDate","凭证日期");
+        writer.addHeaderAlias("evidenceNumber","凭证编号");
+        writer.addHeaderAlias("digest","摘要");
+        writer.addHeaderAlias("costAmount","项目支出");
+        writer.addHeaderAlias("balance","余额");
+        //只输出设置了Alias(别名的字段)
+        writer.setOnlyAlias(true);
+
+        //list中的数据写入excel，默认样式，强制输出标题
+        writer.write(list,true);
+
+        //倒数第三行
+        writer.merge(list.size()+3,list.size()+3,0,1, "负责人：" + user.getName(), cellStyle3);
+        writer.writeCellValue(2,list.size()+3,projectAndUser + " 合计");
+        writer.writeCellValue(3,list.size()+3,project.getTotalBudget().subtract(project.getBalance()));
+        writer.writeCellValue(4,list.size()+3,project.getBalance());
+
+        //倒数第二行
+        writer.merge(list.size()+4,list.size()+4,0,1, "合计", cellStyle3);
+        writer.writeCellValue(2,list.size()+4,"合计");
+        writer.writeCellValue(3,list.size()+4,project.getTotalBudget().subtract(project.getBalance()));
+        writer.writeCellValue(4,list.size()+4,project.getBalance());
+
+        //最后一行
+        LocalDate currentDate = LocalDate.now();
+        String tabulation = currentDate.getYear() + "-" + currentDate.getMonthValue() + "-" + currentDate.getDayOfMonth() + " 制表";
+        writer.merge(list.size()+5,list.size()+5,0,4, tabulation, cellStyle4);
+
+        //设置宽度自适应
+//        writer.autoSizeColumnAll();
+        Sheet sheet = writer.getSheet();
+        for (int i = 0; i < 5; i++) {
+            // 调整每一列宽度
+            sheet.autoSizeColumn((short) i);
+            // 解决自动设置列宽中文失效的问题
+            sheet.setColumnWidth(i, sheet.getColumnWidth(i) * 20 / 10);
+        }
+
+        //设置浏览器响应的格式
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
+        String fileName = URLEncoder.encode("预算明细", "UTF-8");
+        response.setHeader("Content-Disposition","attachment;filename="+fileName+".xlsx");
+
+        ServletOutputStream out = response.getOutputStream();
+        writer.flush(out,true);
+        out.close();
+        writer.close();
+    }
+
 }

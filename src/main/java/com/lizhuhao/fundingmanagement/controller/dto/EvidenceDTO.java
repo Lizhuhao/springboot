@@ -18,4 +18,6 @@ public class EvidenceDTO {
     private String evidenceUrl;
     private String md5;
     private Date createTime;
+    private Integer userId;
+    private Integer projectId;
 }

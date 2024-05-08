@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lizhuhao.fundingmanagement.common.Result;
+import com.lizhuhao.fundingmanagement.controller.dto.EvidenceDTO;
 import com.lizhuhao.fundingmanagement.entity.BudgetChange;
 import com.lizhuhao.fundingmanagement.service.IBudgetChangeService;
 import com.lizhuhao.fundingmanagement.service.IOcrService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * <p>
@@ -85,7 +87,11 @@ public class BudgetChangeController {
         budgetChangeService.download(fileUUID,response);
     }
 
-
+    //导出明细
+    @PostMapping("/exportDetail")
+    public void exportDetail(@RequestBody List<EvidenceDTO> list, HttpServletResponse response) throws Exception {
+        budgetChangeService.exportDetail(list,response);
+    }
 
     @Resource
     private IOcrService ocrService;

@@ -32,4 +32,6 @@ public interface IBudgetChangeService extends IService<BudgetChange> {
     void deleteEvidences(String fileUUID);
 
     List<EvidenceDTO> findDetail(Integer projectId);
+
+    void exportDetail(List<EvidenceDTO> list, HttpServletResponse response) throws IOException;
 }
