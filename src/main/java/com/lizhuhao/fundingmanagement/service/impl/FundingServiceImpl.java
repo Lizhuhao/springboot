@@ -81,7 +81,7 @@ public class FundingServiceImpl extends ServiceImpl<FundingMapper, Funding> impl
             for (FundingDTO fundingDTO : list) {
                 Funding funding = new Funding();
                 funding.setFundingTypeId(fundingDTO.getKey());
-                if(StrUtil.isNotBlank(fundingDTO.getValue())){
+                if(StrUtil.isNotBlank(fundingDTO.getValue())){  //如果前端传来的值是空的，就填入0.00
                     funding.setAmount(new BigDecimal(fundingDTO.getValue()));
                 }else{
                     funding.setAmount(new BigDecimal("0.00"));

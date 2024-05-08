@@ -82,11 +82,13 @@ public class BudgetChangeServiceImpl extends ServiceImpl<BudgetChangeMapper, Bud
         List<BudgetChange> list = list(queryChange);   //查询该预算类型预算变化
         if(list.size() != 0){
             for (BudgetChange change : list) {
-                amount = amount.subtract(change.getCostAmount());
+                amount = amount.subtract(change.getCostAmount());//该预算类型剩余额度
             }
         }
-        if(amount.compareTo(budgetChange.getCostAmount()) < 0){
-            deleteEvidences(budgetChange.getEvidenceUrl());//删除上传的文件
+        if(amount.compareTo(budgetChange.getCostAmount()) < 0){//该预算类型剩余额度比传入数据小
+            if(budgetChange.getEvidenceUrl() != null){
+                deleteEvidences(budgetChange.getEvidenceUrl());//删除上传的文件
+            }
             return Result.error(Constants.CODE_400,"报销金额大于该预算类型余额");
         }
         BigDecimal balance = new BigDecimal(0);//余额
@@ -241,7 +243,7 @@ public class BudgetChangeServiceImpl extends ServiceImpl<BudgetChangeMapper, Bud
         queryWrapper.ne("del_flag",true);
         queryWrapper.eq("evidence_url",fileUUID);
         List<BudgetChange> fileList = list(queryWrapper);
-        if(fileList.size() == 0){
+        if(fileList.size() != 0){
             File evidence = new File(fileUploadPath + fileUUID);
             evidence.delete();
         }

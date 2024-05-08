@@ -32,7 +32,7 @@ public class BudgetChangeController {
     @Autowired
     private IBudgetChangeService budgetChangeService;
 
-    //新增或更新，
+    //新增或更新，执行预算
     @PostMapping
     public Result save(@RequestBody BudgetChange budgetChange){
         return budgetChangeService.addAndUpdate(budgetChange);
