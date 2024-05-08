@@ -110,14 +110,47 @@ public class FundingServiceImpl extends ServiceImpl<FundingMapper, Funding> impl
     public List<FundingDTO> findFunding(Integer projectId) {
         List<FundingDTO> fundingDTOList = new ArrayList<>();
         List<Funding> list = selectList(projectId);
-        for (Funding funding : list) {
-            FundingDTO fundingDTO = new FundingDTO();
-            fundingDTO.setId(funding.getId());
-            fundingDTO.setKey(funding.getFundingTypeId());
-            fundingDTO.setValue(funding.getAmount().toString());
-            FundingType fundingType = fundingTypeService.getById(funding.getFundingTypeId());
-            fundingDTO.setLabel(fundingType.getTypeName());
-            fundingDTOList.add(fundingDTO);
+        if(list.size() > 0){
+            for (Funding funding : list) {
+                FundingDTO fundingDTO = new FundingDTO();
+                fundingDTO.setId(funding.getId());
+                fundingDTO.setKey(funding.getFundingTypeId());
+                fundingDTO.setValue(funding.getAmount().toString());
+                FundingType fundingType = fundingTypeService.getById(funding.getFundingTypeId());
+                fundingDTO.setLabel(fundingType.getTypeName());
+                fundingDTOList.add(fundingDTO);
+            }
+        }
+        return fundingDTOList;
+    }
+
+    @Override
+    public List<FundingDTO> surplusFunding(Integer projectId) {
+        List<FundingDTO> fundingDTOList = new ArrayList<>();
+        List<Funding> list = selectList(projectId);
+        if(list.size() > 0){
+            for (Funding funding : list) {
+                FundingDTO fundingDTO = new FundingDTO();
+                fundingDTO.setId(funding.getId());
+                fundingDTO.setKey(funding.getFundingTypeId());
+
+                QueryWrapper<BudgetChange> queryWrapper = new QueryWrapper<>();//计算剩余预算
+                queryWrapper.ne("del_flag",true);
+                queryWrapper.eq("project_id",projectId);
+                queryWrapper.eq("funding_type_id",funding.getFundingTypeId());
+                List<BudgetChange> budgetChangeList = budgetChangeService.list(queryWrapper);
+                BigDecimal surplus = funding.getAmount();
+                if(budgetChangeList.size() > 0){
+                    for (BudgetChange budgetChange : budgetChangeList) {
+                        surplus = surplus.subtract(budgetChange.getCostAmount());
+                    }
+                }
+                fundingDTO.setValue(surplus.toString());
+
+                FundingType fundingType = fundingTypeService.getById(funding.getFundingTypeId());
+                fundingDTO.setLabel(fundingType.getTypeName());
+                fundingDTOList.add(fundingDTO);
+            }
         }
         return fundingDTOList;
     }

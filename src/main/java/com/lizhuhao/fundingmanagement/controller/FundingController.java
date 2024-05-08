@@ -46,11 +46,16 @@ public class FundingController {
         }
     }
 
-
     //查询项目的分配经费
     @GetMapping("/findFunding")
     public Result findFunding(@RequestParam Integer projectId){
         return Result.success(fundingService.findFunding(projectId));
+    }
+
+    //查询项目的分配经费
+    @GetMapping("/surplusFunding")
+    public Result surplusFunding(@RequestParam Integer projectId){
+        return Result.success(fundingService.surplusFunding(projectId));
     }
 }
 

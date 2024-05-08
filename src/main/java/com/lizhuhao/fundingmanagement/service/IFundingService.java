@@ -23,4 +23,6 @@ public interface IFundingService extends IService<Funding> {
     boolean distributeFunding(List<FundingDTO> list, Integer projectId);
 
     List<FundingDTO> findFunding(Integer projectId);
+
+    List<FundingDTO> surplusFunding(Integer projectId);
 }
