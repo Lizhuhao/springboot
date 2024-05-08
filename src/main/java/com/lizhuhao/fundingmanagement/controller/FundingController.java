@@ -39,11 +39,7 @@ public class FundingController {
     //保存项目的分配金额信息,且给项目总额、余额
     @PostMapping("/distribute")
     public Result distributeFunding(@RequestBody List<FundingDTO> list,@RequestParam Integer projectId){
-        if(fundingService.distributeFunding(list,projectId)){
-            return Result.success();
-        }else{
-            return Result.error();
-        }
+        return fundingService.distributeFunding(list,projectId);
     }
 
     //查询项目的分配经费

@@ -3,6 +3,8 @@ package com.lizhuhao.fundingmanagement.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lizhuhao.fundingmanagement.common.Constants;
+import com.lizhuhao.fundingmanagement.common.Result;
 import com.lizhuhao.fundingmanagement.controller.dto.FundingDTO;
 import com.lizhuhao.fundingmanagement.entity.BudgetChange;
 import com.lizhuhao.fundingmanagement.entity.Funding;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -58,7 +61,7 @@ public class FundingServiceImpl extends ServiceImpl<FundingMapper, Funding> impl
     }
 
     @Override
-    public boolean distributeFunding(List<FundingDTO> list, Integer projectId) {
+    public Result distributeFunding(List<FundingDTO> list, Integer projectId) {
         List<Funding> fundings = new ArrayList<>();
         BigDecimal totalBudget = new BigDecimal(0);//总额
         BigDecimal balance = new BigDecimal(0);//余额
@@ -74,6 +77,22 @@ public class FundingServiceImpl extends ServiceImpl<FundingMapper, Funding> impl
                 queryWrapper.ne("del_flag", true);
                 Funding one = getOne(queryWrapper);
                 one.setAmount(new BigDecimal(fundingDTO.getValue()));
+                QueryWrapper<BudgetChange> queryChange = new QueryWrapper<>();
+                queryChange.eq("project_id", projectId);
+                queryChange.eq("funding_type_id",fundingDTO.getKey());
+                queryChange.ne("del_flag", true);
+                List<BudgetChange> budgetChangeList = budgetChangeService.list(queryChange);   //查询该预算类型预算变化
+                BigDecimal all = new BigDecimal("0.00");
+                if(budgetChangeList.size() > 0){
+                    for (BudgetChange budgetChange : budgetChangeList) {
+                        all = all.add(budgetChange.getCostAmount());
+                    }
+                }
+                if(one.getAmount().compareTo(all) < 0){//新填入预算比已花费预算小
+                    return Result.error(Constants.CODE_400,fundingDTO.getLabel() + "已花费预算大于新分配预算");
+                }
+                Date currentTime = new Date();
+                one.setModifyTime(currentTime);
                 totalBudget = totalBudget.add(one.getAmount());
                 fundings.add(one);
             }
@@ -103,7 +122,11 @@ public class FundingServiceImpl extends ServiceImpl<FundingMapper, Funding> impl
         project.setBalance(balance);
         boolean projectR = projectService.saveOrUpdate(project);//给项目总额、余额
         boolean fundingR = saveOrUpdateBatch(fundings);
-        return (projectR && fundingR);
+        if(projectR && fundingR){
+            return Result.success();
+        }else{
+            return Result.error(Constants.CODE_500,"服务器错误，插入失败");
+        }
     }
 
     @Override

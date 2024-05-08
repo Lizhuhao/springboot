@@ -1,6 +1,7 @@
 package com.lizhuhao.fundingmanagement.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.lizhuhao.fundingmanagement.common.Result;
 import com.lizhuhao.fundingmanagement.controller.dto.FundingDTO;
 import com.lizhuhao.fundingmanagement.entity.Funding;
 
@@ -20,7 +21,7 @@ public interface IFundingService extends IService<Funding> {
 
     List<Funding> selectList(Integer projectId);
 
-    boolean distributeFunding(List<FundingDTO> list, Integer projectId);
+    Result distributeFunding(List<FundingDTO> list, Integer projectId);
 
     List<FundingDTO> findFunding(Integer projectId);
 
