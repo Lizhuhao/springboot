@@ -44,6 +44,15 @@ public class BudgetChangeController {
         return Result.success(budgetChangeService.list());
     }
 
+    //根据id查询是否已经上传凭证
+    @GetMapping("/findForEvidence/{id}")
+    public Result findForEvidence(@PathVariable Integer id){
+        if(budgetChangeService.findForEvidence(id)){
+            return Result.success();
+        }else {
+            return Result.error();
+        }
+    }
 
     //分页查询
     @GetMapping("/page")
@@ -78,13 +87,13 @@ public class BudgetChangeController {
 
     /**
      * 凭证文件下载接口   "http://localhost:9090/budgetChange/{fileUUID}"
-     * @param fileUUID
+     * @param id
      * @param response
      * @throws IOException
      */
-    @GetMapping("/{fileUUID}")
-    public void download(@PathVariable String fileUUID, HttpServletResponse response) throws IOException {
-        budgetChangeService.download(fileUUID,response);
+    @GetMapping("/{id}")
+    public void download(@PathVariable Integer id, HttpServletResponse response) throws IOException {
+        budgetChangeService.download(id,response);
     }
 
     //导出明细

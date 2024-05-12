@@ -69,54 +69,61 @@ public class BudgetChangeServiceImpl extends ServiceImpl<BudgetChangeMapper, Bud
 
     @Override
     public Result addAndUpdate(BudgetChange budgetChange) {
+        if(budgetChange.getId() != 0){//修改的情况
+            Date currentTime = new Date();
+            budgetChange.setModifyTime(currentTime);
+        }
+        //查询该预算类型总额
         QueryWrapper<Funding> queryFunding = new QueryWrapper<>();
         queryFunding.eq("project_id", budgetChange.getProjectId());
         queryFunding.eq("funding_type_id",budgetChange.getFundingTypeId());
         queryFunding.ne("del_flag", true);
         Funding funding = fundingService.getOne(queryFunding);
-        BigDecimal amount = funding.getAmount();    //查询该预算类型总额
+        BigDecimal amount = funding.getAmount();
+        //查询该预算类型预算变化
         QueryWrapper<BudgetChange> queryChange = new QueryWrapper<>();
         queryChange.eq("project_id", budgetChange.getProjectId());
         queryChange.eq("funding_type_id",budgetChange.getFundingTypeId());
         queryChange.ne("del_flag", true);
-        List<BudgetChange> list = list(queryChange);   //查询该预算类型预算变化
+        List<BudgetChange> list = list(queryChange);
         if(list.size() != 0){
             for (BudgetChange change : list) {
-                amount = amount.subtract(change.getCostAmount());//该预算类型剩余额度
+                //修改的情况,修改的这一条数据不参加剩余额度计算
+                if(budgetChange.getId() != null && budgetChange.getId().equals(change.getId())){
+                    continue;
+                }else{
+                    amount = amount.subtract(change.getCostAmount());//该预算类型剩余额度
+                }
             }
         }
+        //判断报销金额是否大于该预算类型余额
         if(amount.compareTo(budgetChange.getCostAmount()) < 0){//该预算类型剩余额度比传入数据小
             if(budgetChange.getEvidenceUrl() != null){
                 deleteEvidences(budgetChange.getEvidenceUrl());//删除上传的文件
             }
             return Result.error(Constants.CODE_400,"报销金额大于该预算类型余额");
         }
-        BigDecimal balance = new BigDecimal(0);//余额
+        //更新项目表中的余额数据
         QueryWrapper<Project> queryProject= new QueryWrapper<>();
         queryProject.eq("id", budgetChange.getProjectId());
         queryProject.ne("del_flag", true);
         Project project = projectService.getOne(queryProject);
-        if(budgetChange.getId() != null){
-            Date currentTime = new Date();
-            budgetChange.setModifyTime(currentTime);
-        }
+        BigDecimal balance = project.getTotalBudget();//余额，先赋总额的值再一步一步减
         boolean flag = false;
         if(saveOrUpdate(budgetChange)) {
-            BigDecimal totalBudget = project.getTotalBudget();
             QueryWrapper<BudgetChange> queryBudgetChange = new QueryWrapper<>();
             queryBudgetChange.eq("project_id", budgetChange.getProjectId());
             queryBudgetChange.ne("del_flag", true);
-            balance = balance.add(totalBudget);
             List<BudgetChange> budgetChangeList = list(queryBudgetChange);
             if(budgetChangeList.size() != 0){
                 for (BudgetChange budget : budgetChangeList) {
                     balance = balance.subtract(budget.getCostAmount());
                 }
-            }
-            project.setBalance(balance);
-            //执行预算或修改执行预算时，给项目重新计算余额
-            if(projectService.saveOrUpdate(project)) {
-                flag = true;
+                project.setBalance(balance);
+                //执行预算或修改执行预算时，给项目重新计算余额
+                if(projectService.saveOrUpdate(project)) {
+                    flag = true;
+                }
             }
         }
         if(flag){
@@ -218,19 +225,17 @@ public class BudgetChangeServiceImpl extends ServiceImpl<BudgetChangeMapper, Bud
     }
 
     @Override
-    public void download(String fileUUID, HttpServletResponse response) throws IOException {
+    public void download(Integer id, HttpServletResponse response) throws IOException {
+        BudgetChange budgetChange = getById(id);
+        String fileUUID = budgetChange.getEvidenceUrl();
+        String fileName = budgetChange.getEvidenceName();
         //根据文件唯一标识码获取文件
         File uploadFile = new File(fileUploadPath + fileUUID);
         //设置输出流格式
         ServletOutputStream os = response.getOutputStream();
         response.setContentType("application/octet-stream");
 //        response.setHeader("Content-Disposition","attachment;filename="+ URLEncoder.encode(fileUUID, "UTF-8"));
-        QueryWrapper<BudgetChange> queryWrapper = new QueryWrapper<>();//设置下载文件名
-        queryWrapper.eq("evidence_url",fileUUID);
-        queryWrapper.ne("del_flag",true);
-        BudgetChange one = getOne(queryWrapper);
-        String newFileName = one.getEvidenceName();
-        response.setHeader("Content-Disposition","attachment;filename="+ URLEncoder.encode(newFileName, "UTF-8"));
+        response.setHeader("Content-Disposition","attachment;filename="+ URLEncoder.encode(fileName, "UTF-8"));
         //读取文件字节流
         os.write(FileUtil.readBytes(uploadFile));
         os.flush();
@@ -243,7 +248,7 @@ public class BudgetChangeServiceImpl extends ServiceImpl<BudgetChangeMapper, Bud
         queryWrapper.ne("del_flag",true);
         queryWrapper.eq("evidence_url",fileUUID);
         List<BudgetChange> fileList = list(queryWrapper);
-        if(fileList.size() != 0){
+        if(fileList.size() == 0){   //只上传了，并没有在数据库中使用
             File evidence = new File(fileUploadPath + fileUUID);
             evidence.delete();
         }
@@ -383,6 +388,12 @@ public class BudgetChangeServiceImpl extends ServiceImpl<BudgetChangeMapper, Bud
         writer.flush(out,true);
         out.close();
         writer.close();
+    }
+
+    @Override
+    public boolean findForEvidence(Integer id) {
+        BudgetChange budgetChange = getById(id);
+        return budgetChange.getEvidenceUrl() != null;
     }
 
 }

@@ -27,11 +27,13 @@ public interface IBudgetChangeService extends IService<BudgetChange> {
 
     EvidenceDTO upload(MultipartFile file) throws IOException;
 
-    void download(String fileUUID, HttpServletResponse response) throws IOException;
+    void download(Integer id, HttpServletResponse response) throws IOException;
 
     void deleteEvidences(String fileUUID);
 
     List<EvidenceDTO> findDetail(Integer projectId);
 
     void exportDetail(List<EvidenceDTO> list, HttpServletResponse response) throws IOException;
+
+    boolean findForEvidence(Integer id);
 }
