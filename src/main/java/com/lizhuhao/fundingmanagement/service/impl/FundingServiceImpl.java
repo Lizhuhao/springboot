@@ -57,6 +57,7 @@ public class FundingServiceImpl extends ServiceImpl<FundingMapper, Funding> impl
         QueryWrapper<Funding> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("project_id", projectId);
         queryWrapper.ne("del_flag", true);
+        queryWrapper.orderByAsc("funding_type_id");
         return fundingMapper.selectList(queryWrapper);
     }
 
