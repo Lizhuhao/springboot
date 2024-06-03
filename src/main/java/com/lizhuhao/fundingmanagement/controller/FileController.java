@@ -1,13 +1,19 @@
 package com.lizhuhao.fundingmanagement.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.lizhuhao.fundingmanagement.common.Result;
+import com.lizhuhao.fundingmanagement.entity.Project;
+import com.lizhuhao.fundingmanagement.entity.UploadFile;
 import com.lizhuhao.fundingmanagement.service.IFileService;
+import com.lizhuhao.fundingmanagement.service.IProjectService;
 import com.lizhuhao.fundingmanagement.service.IUserService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -20,6 +26,11 @@ public class FileController {
     @Autowired
     private IFileService fileService;
 
+    @Autowired
+    private IProjectService projectService;
+
+    @Value("${files.upload.path}")
+    private String fileUploadPath;
 
     //分页查询
     @GetMapping("/page")
@@ -44,12 +55,26 @@ public class FileController {
     public Result upload(@RequestParam MultipartFile file,
                          @RequestParam Integer projectId,
                          @RequestParam Integer userId) throws IOException {
+        Project project = projectService.getById(projectId);
+        project.setUploadFlag(true);
         if(fileService.upload(file,projectId,userId)){
-            return Result.success();
+            if(projectService.saveOrUpdate(project)){
+                return Result.success();
+            }else{
+                QueryWrapper<UploadFile> queryWrapperOne = new QueryWrapper<>();
+                queryWrapperOne.ne("del_flag",true);
+                queryWrapperOne.eq("project_id",projectId);
+                queryWrapperOne.eq("user_id",userId);
+                UploadFile one = fileService.getOne(queryWrapperOne);
+                one.setDelFlag(true);
+                fileService.saveOrUpdate(one);
+                File file1 = new File(fileUploadPath + one.getFileUrl());
+                file1.delete();
+                return Result.error();
+            }
         }else{
             return Result.error();
         }
-
     }
 
     /**

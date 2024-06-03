@@ -93,5 +93,8 @@ public class Project implements Serializable {
      */
       private Date modifyTime;
 
-
+    /**
+     * 上传结题报告标志
+     */
+    private Boolean uploadFlag;
 }

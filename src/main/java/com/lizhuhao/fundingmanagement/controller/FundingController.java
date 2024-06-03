@@ -48,7 +48,7 @@ public class FundingController {
         return Result.success(fundingService.findFunding(projectId));
     }
 
-    //查询项目的分配经费
+    //查询项目的剩余经费
     @GetMapping("/surplusFunding")
     public Result surplusFunding(@RequestParam Integer projectId){
         return Result.success(fundingService.surplusFunding(projectId));

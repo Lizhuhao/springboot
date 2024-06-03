@@ -20,4 +20,5 @@ public class ProjectDTO {
     private Boolean delFlag;
     private Date createTime;
     private Date modifyTime;
+    private Boolean uploadFlag;
 }
